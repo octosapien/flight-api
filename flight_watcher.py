@@ -28,7 +28,7 @@ def get_cheapest_flight():
         "departure_id": "PNQ",
         "arrival_id": "VNS",
         "outbound_date": "2025-12-15",
-        "stops": 0,        # only nonstop
+        "flight_type": "oneway",  # <-- Added
         "currency": "INR",
         "hl": "en",
         "api_key": SERP_API_KEY
@@ -39,7 +39,6 @@ def get_cheapest_flight():
         response.raise_for_status()
         data = response.json()
         
-        # Extract lowest price from price_insights
         price_info = data.get("price_insights", {})
         lowest_price = price_info.get("lowest_price", None)
         link = data.get("search_metadata", {}).get("google_flights_url", "No link")
@@ -53,6 +52,7 @@ def get_cheapest_flight():
     except Exception as e:
         log(f"Error fetching flight data: {e}")
         return f"Error fetching flight: {e}"
+
 
 def send_email(message):
     subject = f"[Flight Update] Pune → Varanasi (15 Dec 2025) - {datetime.now().strftime('%H:%M %d-%b')}"
