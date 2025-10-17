@@ -22,26 +22,34 @@ def log(msg):
 
 def get_cheapest_flight():
     log("Fetching flight data from SerpApi...")
+    url = "https://serpapi.com/search.json"
     params = {
         "engine": "google_flights",
         "departure_id": "PNQ",
         "arrival_id": "VNS",
         "outbound_date": "2025-12-15",
-        "stops": 0,
+        "stops": 0,        # only nonstop
         "currency": "INR",
+        "hl": "en",
         "api_key": SERP_API_KEY
     }
 
     try:
-        response = requests.get("https://serpapi.com/search", params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
-        flight = data["best_flights"][0]
-        airline = flight["flights"][0]["airline"]
-        price = flight["price"]
+        
+        # Extract lowest price from price_insights
+        price_info = data.get("price_insights", {})
+        lowest_price = price_info.get("lowest_price", None)
         link = data.get("search_metadata", {}).get("google_flights_url", "No link")
-        log(f"Flight data fetched: {airline} ₹{price}")
-        return f"Cheapest nonstop flight:\nAirline: {airline}\nPrice: ₹{price}\nLink: {link}"
+
+        if lowest_price:
+            log(f"Lowest nonstop flight: ₹{lowest_price}")
+            return f"Cheapest nonstop flight (Pune → Varanasi 15 Dec 2025): ₹{lowest_price}\nLink: {link}"
+        else:
+            log("Price info not available in SerpApi response")
+            return "No price information available yet."
     except Exception as e:
         log(f"Error fetching flight data: {e}")
         return f"Error fetching flight: {e}"
